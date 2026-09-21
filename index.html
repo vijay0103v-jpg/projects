@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFlow - Project Tracking & Management System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Custom TrackFlow Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<!-- ========================================================================== -->
+<!-- FULL-SCREEN PIN SECURITY OVERLAY SCREEN                                    -->
+<!-- ========================================================================== -->
+<div id="login-screen">
+    <div class="pin-card-container">
+        <div class="pin-brand-header text-center mb-3">
+            <div class="pin-brand-logo mb-2">
+                <i class="fa-solid fa-lock text-white"></i>
+            </div>
+            <h3 class="pin-title fw-bold mb-1 text-dark">Enter Security PIN</h3>
+            <div class="pin-subtitle text-muted small">Enter your 4-digit PIN code to unlock TrackFlow</div>
+        </div>
+
+        <!-- Visual 4-Digit PIN Indicator Dots -->
+        <div class="pin-dots-container mb-3" id="pin-dots-display">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+
+        <!-- Error / Status Message Banner -->
+        <div class="pin-error-message text-danger small text-center mb-2 d-none" id="pin-error-text">
+            <i class="fa-solid fa-circle-exclamation me-1"></i> Incorrect PIN. Please try again.
+        </div>
+
+        <!-- Hidden input for keyboard typing support -->
+        <input type="password" id="pin-hidden-input" maxlength="4" pattern="[0-9]*" inputmode="numeric" style="position: absolute; opacity: 0; pointer-events: none;" autofocus>
+
+        <!-- On-Screen Numeric Keypad -->
+        <div class="pin-keypad-grid mb-3">
+            <button type="button" class="btn-pin-key" data-key="1">1</button>
+            <button type="button" class="btn-pin-key" data-key="2">2</button>
+            <button type="button" class="btn-pin-key" data-key="3">3</button>
+            <button type="button" class="btn-pin-key" data-key="4">4</button>
+            <button type="button" class="btn-pin-key" data-key="5">5</button>
+            <button type="button" class="btn-pin-key" data-key="6">6</button>
+            <button type="button" class="btn-pin-key" data-key="7">7</button>
+            <button type="button" class="btn-pin-key" data-key="8">8</button>
+            <button type="button" class="btn-pin-key" data-key="9">9</button>
+            <button type="button" class="btn-pin-key btn-key-action" data-key="clear" title="Clear PIN"><i class="fa-solid fa-rotate-left"></i></button>
+            <button type="button" class="btn-pin-key" data-key="0">0</button>
+            <button type="button" class="btn-pin-key btn-key-action" data-key="backspace" title="Backspace"><i class="fa-solid fa-delete-left"></i></button>
+        </div>
+
+        <div class="text-center pt-2 border-top">
+            <div class="text-muted small mb-1" style="font-size: 0.78rem;" id="pin-hint-text">
+                <i class="fa-solid fa-key me-1 text-primary"></i> Default Access PIN: <strong class="text-dark">1234</strong>
+            </div>
+            <button type="button" class="btn btn-link btn-sm text-decoration-none small text-secondary p-0" onclick="ApexApp.promptChangePin()">
+                <i class="fa-solid fa-gear me-1"></i> Change Security PIN
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="app-container">
+    <!-- ========================================================================== -->
+    <!-- TRACKFLOW SIDEBAR NAVIGATION                                               -->
+    <!-- ========================================================================== -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <span>TrackFlow</span>
+            </a>
+        </div>
+
+        <!-- Workspace Switcher -->
+        <div class="workspace-switcher">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-building text-primary"></i>
+                <div class="text-start" style="line-height: 1.1;">
+                    <div class="fw-bold text-dark" style="font-size: 0.78rem;">Core Engineering</div>
+                    <div class="text-muted" style="font-size: 0.68rem;">Manufacturing v3.4</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-muted" style="font-size: 0.7rem;"></i>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main Navigation</div>
+            <a href="#dashboard" class="nav-link-item active" data-view="dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#projects" class="nav-link-item" data-view="projects">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Project Database</span>
+                <span class="badge bg-primary nav-badge" id="nav-total-projects-badge">0</span>
+            </a>
+            <a href="#timeline" class="nav-link-item" data-view="timeline">
+                <i class="fa-solid fa-timeline"></i>
+                <span>Timeline & Logs</span>
+            </a>
+            <a href="#materials" class="nav-link-item" data-view="materials">
+                <i class="fa-solid fa-boxes-packing"></i>
+                <span>Materials Tracking</span>
+            </a>
+            <a href="#blockers" class="nav-link-item text-danger" data-view="blockers">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Project Blockers</span>
+                <span class="badge bg-danger nav-badge" id="nav-active-blockers-badge">0</span>
+            </a>
+
+            <div class="nav-section-label">Analytics & Views</div>
+            <a href="#deliveries" class="nav-link-item text-success" data-view="deliveries">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Weekly Deliveries</span>
+                <span class="badge bg-success nav-badge" id="nav-weekly-deliveries-badge">0</span>
+            </a>
+            <a href="#customers" class="nav-link-item" data-view="customers">
+                <i class="fa-solid fa-building"></i>
+                <span>Customers</span>
+            </a>
+            <a href="#leads" class="nav-link-item" data-view="leads">
+                <i class="fa-solid fa-user-group"></i>
+                <span>Project Leads</span>
+            </a>
+            <a href="#reports" class="nav-link-item" data-view="reports">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Reports & Exports</span>
+            </a>
+
+            <div class="nav-section-label mt-2">System</div>
+            <a href="#settings" class="nav-link-item" data-view="settings">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings & Data</span>
+            </a>
+        </nav>
+
+        <!-- Sidebar User Footer -->
+        <div class="sidebar-footer">
+            <div class="user-profile-pill" onclick="ApexApp.lockApp()" style="cursor: pointer;" title="Click to Lock Application with PIN">
+                <div class="user-avatar" id="sidebar-user-avatar">PM</div>
+                <div class="text-start flex-grow-1" style="line-height: 1.1;">
+                    <div class="fw-bold text-dark" style="font-size: 0.8rem;" id="sidebar-user-name">Project Manager</div>
+                    <div class="text-muted" style="font-size: 0.7rem;" id="sidebar-user-role">PIN Protected</div>
+                </div>
+                <i class="fa-solid fa-lock text-muted ms-1" style="font-size: 0.85rem;" title="Lock App"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========================================================================== -->
+    <!-- MAIN WRAPPER & TOPBAR                                                      -->
+    <!-- ========================================================================== -->
+    <div id="main-wrapper">
+        <!-- Top Bar Header -->
+        <header id="topbar">
+            <div class="header-left">
+                <button class="sidebar-toggle-btn" id="btn-toggle-sidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="global-search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="global-search-input" id="global-search-input" placeholder="Search tasks, issues, projects, POs...">
+                    <span class="search-shortcut-pill">⌘K</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-pill">
+                    <i class="fa-regular fa-calendar text-primary"></i>
+                    <span id="current-date-display">04-09-2026</span>
+                </div>
+
+                <button class="icon-circle-btn" id="btn-open-notifications" title="System Alerts">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="badge bg-danger position-absolute top-0 end-0 rounded-circle" id="header-alert-count" style="font-size: 0.6rem; padding: 0.2rem 0.4rem;">0</span>
+                </button>
+
+                <button class="btn-primary-action" id="btn-header-add-project">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Project</span>
+                </button>
+
+                <!-- Topbar User Profile & Lock App Dropdown -->
+                <div class="dropdown ms-2">
+                    <button class="user-dropdown-btn dropdown-toggle" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" id="header-user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">PM</div>
+                        <span class="fw-bold text-dark small" id="header-user-name">Project Manager</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2" aria-labelledby="headerUserDropdown" style="min-width: 200px;">
+                        <li class="px-3 py-2 border-bottom mb-1">
+                            <div class="fw-bold text-dark" id="dropdown-user-name">Project Manager</div>
+                            <div class="text-muted small" id="dropdown-user-role">PIN Secured</div>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded small text-dark py-2" href="#" onclick="ApexApp.editUserProfile(); return false;">
+                                <i class="fa-solid fa-user-pen me-2 text-primary"></i> Edit Profile Name & Role
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded small text-dark py-2" href="#" onclick="ApexApp.promptChangePin(); return false;">
+                                <i class="fa-solid fa-key me-2 text-primary"></i> Change Security PIN
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded small text-danger py-2" href="#" onclick="ApexApp.lockApp(); return false;">
+                                <i class="fa-solid fa-lock me-2"></i> Lock Application
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- ========================================================================== -->
+        <!-- CONTENT BODY SECTIONS                                                      -->
+        <!-- ========================================================================== -->
+        <main class="content-body">
+            
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 1. DASHBOARD VIEW (TRACKFLOW DESIGN SYSTEM)                            -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="dashboard-view" class="view-section active">
+                
+                <!-- TrackFlow Welcome Header Banner -->
+                <div class="welcome-header-banner">
+                    <div>
+                        <div class="breadcrumb-label">
+                            <span>ENGINEERING WORKSPACE</span>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i>
+                            <span class="badge bg-primary-subtle text-primary" id="dashboard-sprint-badge">Sprint 14 • 4 days left</span>
+                        </div>
+                        <h1 class="welcome-title">Good morning, Sarah</h1>
+                        <div class="welcome-subtitle">Here is an overview of ongoing velocity, team activity, and blocker alerts for today.</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" id="btn-filter-sprint">
+                            <i class="fa-regular fa-calendar-check me-1"></i> This Sprint
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" id="btn-filter-options">
+                            <i class="fa-solid fa-filter me-1"></i> Filter
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm fw-semibold" id="btn-export-dashboard-report">
+                            <i class="fa-solid fa-file-export me-1"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TrackFlow 4 Top Metric Cards Grid -->
+                <div class="trackflow-kpi-grid">
+                    <div class="tf-kpi-card" style="--tf-bg: #e0e7ff; --tf-color: #4f46e5;">
+                        <div class="tf-kpi-top">
+                            <span class="tf-kpi-label">Active Tasks / Projects</span>
+                            <div class="tf-kpi-icon"><i class="fa-solid fa-list-check"></i></div>
+                        </div>
+                        <div class="tf-kpi-value" id="kpi-in-progress">0</div>
+                        <div class="tf-kpi-subtext text-primary">In Progress across active lines</div>
+                    </div>
+
+                    <div class="tf-kpi-card" style="--tf-bg: #ecfdf5; --tf-color: #10b981;">
+                        <div class="tf-kpi-top">
+                            <span class="tf-kpi-label">Completed Units / Points</span>
+                            <div class="tf-kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        </div>
+                        <div class="tf-kpi-value" id="kpi-completed">0</div>
+                        <div class="tf-kpi-subtext text-success">Completion rate <strong id="kpi-avg-completion">0%</strong></div>
+                    </div>
+
+                    <div class="tf-kpi-card" style="--tf-bg: #fef2f2; --tf-color: #ef4444;">
+                        <div class="tf-kpi-top">
+                            <span class="tf-kpi-label">Urgent / Overdue</span>
+                            <div class="tf-kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        </div>
+                        <div class="tf-kpi-value text-danger" id="kpi-delayed">0</div>
+                        <div class="tf-kpi-subtext text-danger">Requires immediate action</div>
+                    </div>
+
+                    <div class="tf-kpi-card" style="--tf-bg: #f5f3ff; --tf-color: #8b5cf6;">
+                        <div class="tf-kpi-top">
+                            <span class="tf-kpi-label">Sprint Health</span>
+                            <div class="tf-kpi-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                        </div>
+                        <div class="tf-kpi-value text-purple" id="kpi-total-projects">Optimal</div>
+                        <div class="tf-kpi-subtext">Total active portfolio count</div>
+                    </div>
+                </div>
+
+                <!-- TrackFlow Quick Filter Pills Bar -->
+                <div class="quick-filter-bar mb-4">
+                    <span class="quick-filter-label"><i class="fa-solid fa-filter me-1"></i> Quick Filters:</span>
+                    <button class="btn-filter-chip active" data-filter="all">All Projects</button>
+                    <button class="btn-filter-chip text-danger" data-filter="critical"><i class="fa-solid fa-fire"></i> Critical (1A)</button>
+                    <button class="btn-filter-chip text-danger" data-filter="delayed">🔴 Delayed</button>
+                    <button class="btn-filter-chip text-warning" data-filter="due-week">⏰ Due This Week</button>
+                    <button class="btn-filter-chip text-primary" data-filter="in-progress">🟡 In Progress</button>
+                    <button class="btn-filter-chip text-success" data-filter="completed">🟢 Completed</button>
+                    <button class="btn-filter-chip text-secondary" data-filter="on-hold">⚫ On Hold</button>
+                </div>
+
+                <!-- Main Layout Grid (8-col Left Area / 4-col Right Sidebar Area) -->
+                <div class="row g-4">
+                    <!-- LEFT COLUMN AREA (8 Cols) -->
+                    <div class="col-lg-8">
+                        
+                        <!-- Active Projects Cards Section -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="fw-bold fs-5 text-dark mb-0"><i class="fa-solid fa-cubes me-2 text-primary"></i>Active Projects</h3>
+                            <a href="#projects" class="text-primary fw-semibold small text-decoration-none nav-link-item" data-view="projects">View all roadmap <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+
+                        <div class="row g-3 mb-4" id="active-projects-cards-container">
+                            <!-- Cards generated dynamically via JS -->
+                        </div>
+
+                        <!-- Today's Priority Tasks & Projects Table -->
+                        <div class="tf-card p-0 overflow-hidden">
+                            <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
+                                <div>
+                                    <h3 class="tf-card-title"><i class="fa-solid fa-list-check text-primary me-1"></i>Today's Priority Tasks & Projects</h3>
+                                    <div class="text-muted small">Critical items scheduled for completion before cycle review</div>
+                                </div>
+                                <span class="badge bg-light text-dark border">Sorted by Urgency</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                    <thead class="table-light text-muted uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">
+                                        <tr>
+                                            <th style="width: 40px;"></th>
+                                            <th>PROJECT / TASK</th>
+                                            <th>CATEGORY</th>
+                                            <th>PRIORITY</th>
+                                            <th>LEAD</th>
+                                            <th>COMMITTED DATE</th>
+                                            <th>STATUS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-priority-tbody">
+                                        <!-- Priority rows generated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- RIGHT COLUMN SIDEBAR AREA (4 Cols) -->
+                    <div class="col-lg-4">
+                        
+                        <!-- TrackFlow Dark Violet Countdown Card -->
+                        <div class="dark-countdown-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-white text-dark fw-bold" style="font-size: 0.68rem;">CYCLE DEADLINE</span>
+                                <i class="fa-solid fa-rocket" style="opacity: 0.7;"></i>
+                            </div>
+                            <h4 class="fw-bold mt-2 mb-1" style="font-size: 1.15rem;">Release v3.4 Demo</h4>
+                            <div class="small opacity-75">Target shipment countdown for milestone delivery</div>
+
+                            <div class="countdown-timer-grid">
+                                <div class="timer-box">
+                                    <div class="timer-val" id="cd-days">04</div>
+                                    <div class="timer-unit">DAYS</div>
+                                </div>
+                                <div class="timer-box">
+                                    <div class="timer-val" id="cd-hours">18</div>
+                                    <div class="timer-unit">HOURS</div>
+                                </div>
+                                <div class="timer-box">
+                                    <div class="timer-val" id="cd-mins">21</div>
+                                    <div class="timer-unit">MINS</div>
+                                </div>
+                                <div class="timer-box">
+                                    <div class="timer-val" id="cd-secs">58</div>
+                                    <div class="timer-unit">SECS</div>
+                                </div>
+                            </div>
+
+                            <button class="btn-dark-card-action nav-link-item" data-view="projects">
+                                <span>Open Kanban Pipeline</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Sprint Burndown / Velocity Chart Card -->
+                        <div class="tf-card">
+                            <div class="tf-card-header">
+                                <h3 class="tf-card-title"><i class="fa-solid fa-chart-line text-primary"></i>Delivery Burndown</h3>
+                                <span class="badge bg-success-subtle text-success">On Track</span>
+                            </div>
+                            <div class="chart-container" style="height: 180px;">
+                                <canvas id="chart-burndown"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Team Activity Feed Card -->
+                        <div class="tf-card">
+                            <div class="tf-card-header">
+                                <h3 class="tf-card-title"><i class="fa-solid fa-bolt text-warning"></i>Team Activity Feed</h3>
+                                <a href="#timeline" class="text-primary small text-decoration-none nav-link-item" data-view="timeline">View all</a>
+                            </div>
+                            <div class="activity-feed-list" id="dashboard-activity-feed">
+                                <!-- Activity items generated dynamically -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Charts Section (5 Interactive Chart.js Visualizations) -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-4">
+                        <div class="tf-card">
+                            <div class="tf-card-header">
+                                <h3 class="tf-card-title"><i class="fa-solid fa-chart-pie text-primary me-1"></i>Status Distribution</h3>
+                            </div>
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="chart-status"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="tf-card">
+                            <div class="tf-card-header">
+                                <h3 class="tf-card-title"><i class="fa-solid fa-user-gear text-primary me-1"></i>Workload by Lead</h3>
+                            </div>
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="chart-lead"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="tf-card">
+                            <div class="tf-card-header">
+                                <h3 class="tf-card-title"><i class="fa-solid fa-layer-group text-primary me-1"></i>Priority Breakdown</h3>
+                            </div>
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="chart-priority"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 2. PROJECT DATABASE VIEW                                               -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="projects-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-list-check text-primary"></i> Project Database</h1>
+                        <div class="view-subtitle">Master project tracker table with advanced search, sorting, column toggle & exports</div>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-success btn-sm fw-semibold" id="btn-export-excel">
+                            <i class="fa-solid fa-file-excel me-1"></i> Export Excel
+                        </button>
+                        <button class="btn btn-outline-success btn-sm fw-semibold" id="btn-export-csv">
+                            <i class="fa-solid fa-file-csv me-1"></i> Export CSV
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" id="btn-print-table">
+                            <i class="fa-solid fa-print me-1"></i> Print
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm fw-semibold" id="btn-open-import-modal">
+                            <i class="fa-solid fa-file-import me-1"></i> Import Excel/CSV
+                        </button>
+                        <button class="btn btn-primary btn-sm fw-semibold" id="btn-add-new-project-main">
+                            <i class="fa-solid fa-plus me-1"></i> Add Project
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <!-- Advanced Filters & Search Toolbar -->
+                    <div class="table-toolbar">
+                        <div class="toolbar-left">
+                            <div class="table-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="table-search-input" placeholder="Search project name, PO, customer...">
+                            </div>
+
+                            <select class="form-select form-select-sm" id="filter-status-select" style="width: 150px;">
+                                <option value="">All Statuses</option>
+                                <option value="Completed">🟢 Completed</option>
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Under Design">🔵 Under Design</option>
+                                <option value="Under Production">🟠 Under Production</option>
+                                <option value="Under Wiring">🟣 Under Wiring</option>
+                                <option value="Delayed">🔴 Delayed</option>
+                                <option value="On Hold">⚫ On Hold</option>
+                                <option value="Yet to Start">⚪ Yet to Start</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="filter-priority-select" style="width: 140px;">
+                                <option value="">All Priorities</option>
+                                <option value="1A">1A – Critical</option>
+                                <option value="1">1 – High</option>
+                                <option value="2">2 – Medium</option>
+                                <option value="3">3 – Low</option>
+                                <option value="4">4 – Normal</option>
+                                <option value="5">5 – Lowest</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="filter-lead-select" style="width: 140px;">
+                                <option value="">All Leads</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="filter-customer-select" style="width: 140px;">
+                                <option value="">All Customers</option>
+                            </select>
+                        </div>
+
+                        <div class="toolbar-right">
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" id="btn-column-visibility" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-columns me-1"></i> Columns
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end p-3 shadow-sm" id="column-visibility-dropdown" style="min-width: 220px; max-height: 350px; overflow-y: auto;">
+                                </ul>
+                            </div>
+
+                            <select class="form-select form-select-sm" id="table-page-size" style="width: 100px;">
+                                <option value="10">10 / page</option>
+                                <option value="25" selected>25 / page</option>
+                                <option value="50">50 / page</option>
+                                <option value="100">100 / page</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Master Data Table Container -->
+                    <div class="table-responsive custom-table-container">
+                        <table class="table table-hover align-middle custom-table projects-table" id="master-projects-table">
+                            <thead>
+                                <tr id="projects-table-header">
+                                </tr>
+                            </thead>
+                            <tbody id="projects-table-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer Pagination -->
+                    <div class="table-footer">
+                        <div class="text-muted" style="font-size: 0.82rem;" id="table-pagination-info">
+                            Showing 0 to 0 of 0 projects
+                        </div>
+                        <div class="pagination-controls" id="table-pagination-btns">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 3. TIMELINE & LOGS VIEW                                               -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="timeline-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-timeline text-primary"></i> Project Activity & Timeline</h1>
+                        <div class="view-subtitle">Chronological record of manufacturing milestones and stage updates</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-add-global-timeline">
+                        <i class="fa-solid fa-plus me-1"></i> Post Timeline Update
+                    </button>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="table-card p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <div class="fw-bold"><i class="fa-solid fa-stream me-2 text-primary"></i>Recent Updates Feed</div>
+                                <select class="form-select form-select-sm" id="timeline-filter-project" style="width: 220px;">
+                                    <option value="">All Projects</option>
+                                </select>
+                            </div>
+
+                            <div class="timeline-feed" id="timeline-feed-container">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="table-card p-3">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 0.95rem;">
+                                <i class="fa-solid fa-pen-to-square text-primary me-2"></i>New Activity Log Entry
+                            </h5>
+                            <form id="form-add-timeline-entry">
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small fw-semibold">Select Project</label>
+                                    <select class="form-select form-select-sm" id="tl-input-project-id" required>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small fw-semibold">Date</label>
+                                    <input type="date" class="form-control form-control-sm" id="tl-input-date" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small fw-semibold">Activity / Update</label>
+                                    <textarea class="form-control form-control-sm" id="tl-input-update" rows="3" placeholder="e.g. Continuity testing passed..." required></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small fw-semibold">Person / Technician</label>
+                                    <input type="text" class="form-control form-control-sm" id="tl-input-person" placeholder="e.g. Raja Rajan" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-semibold">Stage Status</label>
+                                    <select class="form-select form-select-sm" id="tl-input-status">
+                                        <option value="In Progress">🟡 In Progress</option>
+                                        <option value="Completed">🟢 Stage Completed</option>
+                                        <option value="Hold">⚫ Hold</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Add Timeline Update
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 4. MATERIALS TRACKING VIEW                                             -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="materials-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-boxes-packing text-primary"></i> Materials Tracking</h1>
+                        <div class="view-subtitle">Raw materials, BOM items & stock availability tracking per project</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-open-add-material-modal">
+                        <i class="fa-solid fa-plus me-1"></i> Add Material Item
+                    </button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <div class="toolbar-left">
+                            <div class="table-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="mat-search-input" placeholder="Search part number, material name, supplier...">
+                            </div>
+
+                            <select class="form-select form-select-sm" id="mat-filter-project" style="width: 220px;">
+                                <option value="">All Projects</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="mat-filter-status" style="width: 160px;">
+                                <option value="">All Availability</option>
+                                <option value="Available">🟢 Available</option>
+                                <option value="Partially Available">🟡 Partially Available</option>
+                                <option value="Pending">🟠 Pending</option>
+                                <option value="Ordered">🔵 Ordered</option>
+                                <option value="Delayed">🔴 Delayed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="custom-table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Material Name</th>
+                                    <th>Part Number</th>
+                                    <th>Required Qty</th>
+                                    <th>Available Qty</th>
+                                    <th>Pending Qty</th>
+                                    <th>Availability %</th>
+                                    <th>Supplier</th>
+                                    <th>Expected Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materials-table-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 4B. PROJECT BLOCKERS & RISKS VIEW                                      -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="blockers-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Project Blockers & Risks</h1>
+                        <div class="view-subtitle">Log, track and resolve critical bottlenecks, component shortages, and manufacturing risks</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" id="btn-open-add-blocker-modal">
+                        <i class="fa-solid fa-plus me-1"></i> Log New Blocker
+                    </button>
+                </div>
+
+                <!-- KPI Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-danger">
+                            <div class="kpi-title">Active Open Blockers</div>
+                            <div class="kpi-value text-danger" id="stat-open-blockers-count">0</div>
+                            <div class="kpi-subtext">Requires immediate resolution</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-warning">
+                            <div class="kpi-title">Critical Severity</div>
+                            <div class="kpi-value text-warning" id="stat-critical-blockers-count">0</div>
+                            <div class="kpi-subtext">Halting production line</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-success">
+                            <div class="kpi-title">Resolved Blockers</div>
+                            <div class="kpi-value text-success" id="stat-resolved-blockers-count">0</div>
+                            <div class="kpi-subtext">Successfully cleared</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-primary">
+                            <div class="kpi-title">Total Logged</div>
+                            <div class="kpi-value text-primary" id="stat-total-blockers-count">0</div>
+                            <div class="kpi-subtext">Lifetime issue logs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <div class="toolbar-left">
+                            <div class="table-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="blocker-search-input" placeholder="Search blocker title, owner, category...">
+                            </div>
+
+                            <select class="form-select form-select-sm" id="blocker-filter-project" style="width: 220px;">
+                                <option value="">All Projects</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="blocker-filter-status" style="width: 150px;">
+                                <option value="">All Statuses</option>
+                                <option value="Open">🔴 Open</option>
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Resolved">🟢 Resolved</option>
+                            </select>
+
+                            <select class="form-select form-select-sm" id="blocker-filter-severity" style="width: 150px;">
+                                <option value="">All Severities</option>
+                                <option value="Critical">🔥 Critical</option>
+                                <option value="High">🟠 High</option>
+                                <option value="Medium">🟡 Medium</option>
+                                <option value="Low">🔵 Low</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="custom-table-container">
+                        <table class="table table-hover align-middle custom-table blockers-table">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Blocker / Issue Title</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th>Owner</th>
+                                    <th>Date Logged</th>
+                                    <th>Status</th>
+                                    <th>Action Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blockers-table-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 5. CUSTOMERS VIEW                                                      -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="customers-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-building text-primary"></i> Customer Analytics</h1>
+                        <div class="view-subtitle">Project commitments, active delivery schedule & volume by customer</div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="table-card p-3">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 0.95rem;">Select Customer</h5>
+                            <div class="list-group" id="customer-selector-list">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div id="customer-details-container">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 6. PROJECT LEADS VIEW                                                  -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="leads-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-user-group text-primary"></i> Project Lead Performance</h1>
+                        <div class="view-subtitle">Workload distribution, execution metrics & completion rates per project lead</div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="table-card p-3">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 0.95rem;">Select Project Lead</h5>
+                            <div class="list-group" id="lead-selector-list">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div id="lead-details-container">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 7. REPORTS VIEW                                                        -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="reports-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-file-invoice-dollar text-primary"></i> Reports Generator</h1>
+                        <div class="view-subtitle">Generate custom status, delivery performance & customer reports</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success btn-sm" id="btn-export-report-excel">
+                            <i class="fa-solid fa-file-excel me-1"></i> Export Excel
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-print-report">
+                            <i class="fa-solid fa-print me-1"></i> Print Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-card p-3 mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Select Report Type</label>
+                            <select class="form-select form-select-sm" id="report-type-select">
+                                <option value="status">Project Status Report</option>
+                                <option value="delivery">Delivery Performance Report</option>
+                                <option value="lead">Project Lead Workload Report</option>
+                                <option value="customer">Customer Portfolio Report</option>
+                                <option value="priority">Priority Breakdown Report</option>
+                                <option value="delayed">Delayed / Overdue Projects Report</option>
+                                <option value="monthly">Monthly Project Schedule Report</option>
+                                <option value="blockers">🚨 Project Blockers & Risks Report</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">From Date</label>
+                            <input type="date" class="form-control form-control-sm" id="report-from-date">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">To Date</label>
+                            <input type="date" class="form-control form-control-sm" id="report-to-date">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary btn-sm w-100 fw-semibold" id="btn-generate-report">
+                                <i class="fa-solid fa-gear me-1"></i> Generate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card" id="report-results-container">
+                    <div class="p-4 text-center text-muted" id="report-empty-placeholder">
+                        <i class="fa-solid fa-chart-column fa-2x mb-2 text-secondary"></i>
+                        <div>Select report options above and click <strong>Generate</strong></div>
+                    </div>
+                    <div class="custom-table-container d-none" id="report-table-wrapper">
+                        <table class="custom-table" id="report-output-table">
+                            <thead id="report-table-thead"></thead>
+                            <tbody id="report-table-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 7B. WEEKLY DELIVERIES & PROJECT SUMMARY VIEW                           -->
+            <!-- ---------------------------------------------------------------------- -->
+            <section id="deliveries-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-truck-fast text-success"></i> Weekly Deliveries & Project Summary</h1>
+                        <div class="view-subtitle">Executive summary of all active projects with calendar week delivery schedule</div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" id="btn-print-deliveries-summary">
+                            <i class="fa-solid fa-print me-1"></i> Quick Print One-Pager
+                        </button>
+                        <button class="btn btn-success btn-sm fw-semibold" id="btn-export-deliveries-excel">
+                            <i class="fa-solid fa-file-excel me-1"></i> Export Schedule
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Cards for Delivery View -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-primary">
+                            <div class="kpi-title">Total Projects</div>
+                            <div class="kpi-value text-primary" id="kpi-deliv-total-projects">0</div>
+                            <div class="kpi-subtext">Active project database count</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-success">
+                            <div class="kpi-title">Delivering This Week</div>
+                            <div class="kpi-value text-success" id="kpi-deliv-this-week-count">0</div>
+                            <div class="kpi-subtext text-success" id="kpi-deliv-this-week-sub">0 units scheduled</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-info">
+                            <div class="kpi-title">Upcoming Next Week</div>
+                            <div class="kpi-value text-info" id="kpi-deliv-next-week-count">0</div>
+                            <div class="kpi-subtext text-info" id="kpi-deliv-next-week-sub">Next 7-day horizon</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card border-start border-4 border-danger">
+                            <div class="kpi-title">Overdue Deliveries</div>
+                            <div class="kpi-value text-danger" id="kpi-deliv-overdue-count">0</div>
+                            <div class="kpi-subtext text-danger">Passed target delivery date</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Customer Portfolio Snapshot -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white py-2.5 px-3 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark small"><i class="fa-solid fa-building me-1 text-primary"></i> Customer Portfolio Snapshot</span>
+                        <span class="small text-muted" style="font-size: 0.75rem;">Delivery allocation by customer</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-2" id="deliveries-customer-summary-bar">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls Bar -->
+                <div class="table-card p-3 mb-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <div class="table-search-box w-100">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="deliveries-search-input" placeholder="Search project name, PO, customer, lead...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="deliveries-week-filter">
+                                <option value="all">📅 All Delivery Weeks</option>
+                                <option value="this_week">🚀 This Week Deliveries</option>
+                                <option value="next_week">📦 Next Week Deliveries</option>
+                                <option value="week_3">🗓️ Week 3 Deliveries</option>
+                                <option value="week_4_plus">⏳ Week 4+ (Later)</option>
+                                <option value="overdue">🔴 Overdue Deliveries</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="deliveries-status-filter">
+                                <option value="">All Project Statuses</option>
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Completed">🟢 Completed</option>
+                                <option value="Delayed">🔴 Delayed</option>
+                                <option value="Under Design">🔵 Under Design</option>
+                                <option value="On Hold">⚫ On Hold</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <span class="badge bg-light text-dark border p-2 w-100 fw-semibold" id="deliveries-filtered-count-badge">0 Projects</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section A: Executive Short Summary of All Projects -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom flex-wrap gap-2">
+                        <div>
+                            <div class="fw-bold text-dark fs-6"><i class="fa-solid fa-list-check me-2 text-primary"></i>Executive Short Summary of All Projects</div>
+                            <span class="small text-muted">Compact overview of all active projects & shipment readiness</span>
+                        </div>
+                        <div class="btn-group btn-group-sm" id="deliveries-view-mode-toggle">
+                            <button type="button" class="btn btn-outline-secondary active" data-view-mode="table" title="Table View">
+                                <i class="fa-solid fa-table-list me-1"></i> Table View
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-view-mode="cards" title="Compact Cards View">
+                                <i class="fa-solid fa-border-all me-1"></i> Compact Cards View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Table View Container -->
+                    <div class="card-body p-0" id="deliveries-summary-table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 custom-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Health</th>
+                                        <th>Project Name</th>
+                                        <th>Customer</th>
+                                        <th>PO Number</th>
+                                        <th>Lead</th>
+                                        <th>Target Date</th>
+                                        <th class="text-center">Total / Pending Qty</th>
+                                        <th style="min-width: 130px;">Mat. Availability</th>
+                                        <th style="min-width: 120px;">Progress</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deliveries-summary-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Compact Grid Cards Container (Initially Hidden) -->
+                    <div class="card-body p-3 d-none" id="deliveries-summary-cards-container">
+                        <div class="row g-3" id="deliveries-summary-cards-grid">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section B: Weekly Deliveries Schedule Breakdown -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="fw-bold text-dark fs-6"><i class="fa-solid fa-calendar-week me-2 text-success"></i>Weekly Deliveries Schedule Breakdown</div>
+                        <div class="btn-group btn-group-sm" id="deliveries-week-chips">
+                            <button type="button" class="btn btn-outline-secondary active" data-week-chip="all">All</button>
+                            <button type="button" class="btn btn-outline-danger" data-week-chip="overdue">Overdue</button>
+                            <button type="button" class="btn btn-outline-success" data-week-chip="this_week">This Week</button>
+                            <button type="button" class="btn btn-outline-primary" data-week-chip="next_week">Next Week</button>
+                            <button type="button" class="btn btn-outline-info" data-week-chip="later">Later</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-3" id="deliveries-weekly-breakdown-container">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------------------------- -->
+            <!-- 8. SETTINGS VIEW                                                       -->
+            <!-- ---------------------------------------------------------------------- -->
+            
+            
+
+            <section id="settings-view" class="view-section">
+                <div class="view-header">
+                    <div>
+                        <h1 class="view-title"><i class="fa-solid fa-sliders text-primary"></i> System Settings & Data Management</h1>
+                        <div class="view-subtitle">Manage browser LocalStorage data, sample projects & system backups</div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="table-card p-4">
+                            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2"><i class="fa-solid fa-database text-primary me-2"></i>Data Reset & Seeding</h5>
+                            <p class="text-muted small mb-3">Reset the application data back to the default factory sample projects (Enphase Cell Modem, IQSS, IQ Meter, etc.).</p>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-warning btn-sm fw-semibold" id="btn-reseed-data-setting">
+                                    <i class="fa-solid fa-rotate-right me-1"></i> Re-Seed Factory Sample Data
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm fw-semibold" id="btn-clear-all-data">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Clear All LocalStorage
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="table-card p-4">
+                            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2"><i class="fa-solid fa-floppy-disk text-primary me-2"></i>JSON System Backup / Restore</h5>
+                            <p class="text-muted small mb-3">Export full application state (Projects, Materials, Timelines) to a JSON backup file or restore from file.</p>
+                            
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-outline-primary btn-sm fw-semibold" id="btn-download-json-backup">
+                                    <i class="fa-solid fa-download me-1"></i> Download JSON Backup
+                                </button>
+                                <label class="btn btn-outline-secondary btn-sm fw-semibold mb-0 cursor-pointer">
+                                    <i class="fa-solid fa-upload me-1"></i> Restore JSON
+                                    <input type="file" id="input-json-restore" accept=".json" class="d-none">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 1: ADD / EDIT PROJECT                                               -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="addProjectModalTitle">
+                    <i class="fa-solid fa-folder-plus me-2 text-primary"></i> Add New Manufacturing Project
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-project">
+                <input type="hidden" id="proj-input-id">
+                <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Project Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="proj-input-name" placeholder="e.g. Cell Modem Board" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark">Category</label>
+                            <select class="form-select" id="proj-input-type">
+                                <option value="New">New Project</option>
+                                <option value="Repeated">Repeated Project</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark">Customer <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="proj-input-customer" placeholder="e.g. Enphase" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">PO Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="proj-input-po" placeholder="e.g. ENIND205415" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Project Lead <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="proj-input-lead" placeholder="e.g. Raja Rajan" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Priority <span class="text-danger">*</span></label>
+                            <select class="form-select" id="proj-input-priority" required>
+                                <option value="1A">1A – Critical</option>
+                                <option value="1">1 – High</option>
+                                <option value="2">2 – Medium</option>
+                                <option value="3">3 – Low</option>
+                                <option value="4" selected>4 – Normal</option>
+                                <option value="5">5 – Lowest</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark">PO Date</label>
+                            <input type="date" class="form-control" id="proj-input-po-date">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark">Committed Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="proj-input-committed-date" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark">Revised Target Date</label>
+                            <input type="date" class="form-control" id="proj-input-revised-date">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-success">Actual Delivered Date</label>
+                            <input type="date" class="form-control border-success" id="proj-input-delivered-date">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Total Quantity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="proj-input-total-qty" min="1" value="100" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Delivered Quantity</label>
+                            <input type="number" class="form-control" id="proj-input-delivered-qty" min="0" value="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Pending Quantity (Auto)</label>
+                            <input type="number" class="form-control bg-light" id="proj-input-pending-qty" readonly>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Materials Availability %</label>
+                            <input type="number" class="form-control" id="proj-input-mat-avail" min="0" max="100" value="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Current Status</label>
+                            <select class="form-select" id="proj-input-status">
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Completed">🟢 Completed</option>
+                                <option value="Under Design">🔵 Under Design</option>
+                                <option value="Under Production">🟠 Under Production</option>
+                                <option value="Under Wiring">🟣 Under Wiring</option>
+                                <option value="Delayed">🔴 Delayed</option>
+                                <option value="On Hold">⚫ On Hold</option>
+                                <option value="Yet to Start">⚪ Yet to Start</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Invoice Number</label>
+                            <input type="text" class="form-control" id="proj-input-invoice" placeholder="e.g. INV-90481">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">Assigned Team Members / Contributors</label>
+                            <input type="text" class="form-control" id="proj-input-team" placeholder="e.g. Raja Rajan, Tamil, Prabhu, Suresh (comma-separated)">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">Description / Scope of Work</label>
+                            <textarea class="form-control" id="proj-input-desc" rows="2" placeholder="Manufacturing details, special requirements..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btn-save-project">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 2: PROJECT DETAILS VIEW & PIPELINE                                   -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="projectDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="modal-title fw-bold" id="detail-modal-title">Project Details</h5>
+                    <span id="detail-modal-status-badge"></span>
+                    <span id="detail-modal-priority-badge"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto;">
+                
+                <!-- Delay Alert Banner if Delayed -->
+                <div id="detail-delay-banner" class="d-none">
+                </div>
+
+                <!-- Interactive 8-Stage Progress Pipeline Bar -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                        <span class="fw-bold text-dark" style="font-size: 0.88rem;"><i class="fa-solid fa-diagram-project me-2 text-primary"></i>Manufacturing Pipeline Progress (Click Stage to Update Status)</span>
+                        <span class="badge bg-primary fs-6" id="detail-overall-completion-badge">0% Complete</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="pipeline-tracker" id="pipeline-tracker-container">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs fw-semibold mb-3" id="projectDetailTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#tab-info" type="button"><i class="fa-solid fa-circle-info me-1"></i> Specifications & Dates</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#tab-materials" type="button"><i class="fa-solid fa-boxes-packing me-1"></i> Project Materials BOM</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#tab-timeline" type="button"><i class="fa-solid fa-timeline me-1"></i> Activity Timeline Logs</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger fw-bold" id="blockers-tab" data-bs-toggle="tab" data-bs-target="#tab-blockers" type="button"><i class="fa-solid fa-triangle-exclamation me-1"></i> Blockers & Risks</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-success fw-bold" id="batches-tab" data-bs-toggle="tab" data-bs-target="#tab-batches" type="button"><i class="fa-solid fa-truck-ramp-box me-1"></i> Delivery Schedule (3+ Batches)</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="projectDetailTabsContent">
+                    <!-- TAB 1: General Info -->
+                    <div class="tab-pane fade show active" id="tab-info">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded bg-light">
+                                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-2"><i class="fa-solid fa-industry me-1"></i> Project Information</h6>
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr><th class="text-muted" style="width: 40%;">Project Name:</th><td class="fw-bold" id="detail-info-name">-</td></tr>
+                                        <tr><th class="text-muted">Type:</th><td id="detail-info-type">-</td></tr>
+                                        <tr><th class="text-muted">Customer:</th><td class="fw-bold" id="detail-info-customer">-</td></tr>
+                                        <tr><th class="text-muted">PO Number:</th><td id="detail-info-po">-</td></tr>
+                                        <tr><th class="text-muted">Project Lead:</th><td class="fw-semibold text-primary" id="detail-info-lead">-</td></tr>
+                                        <tr><th class="text-muted">Invoice Number:</th><td id="detail-info-invoice">-</td></tr>
+                                        <tr><th class="text-muted">Description:</th><td id="detail-info-desc">-</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded bg-light">
+                                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-2"><i class="fa-solid fa-truck-ram me-1"></i> Delivery & Quantities</h6>
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr><th class="text-muted" style="width: 45%;">PO Date:</th><td id="detail-info-po-date">-</td></tr>
+                                        <tr><th class="text-muted">Committed Date:</th><td class="fw-bold" id="detail-info-committed-date">-</td></tr>
+                                        <tr><th class="text-muted">Revised Target:</th><td id="detail-info-revised-date">-</td></tr>
+                                        <tr><th class="text-muted">Actual Delivered Date:</th><td class="text-success fw-bold" id="detail-info-delivered-date">-</td></tr>
+                                        <tr><th class="text-muted">Total Quantity:</th><td class="fw-bold fs-6" id="detail-info-total-qty">-</td></tr>
+                                        <tr><th class="text-muted">Delivered Quantity:</th><td class="text-success fw-bold" id="detail-info-delivered-qty">-</td></tr>
+                                        <tr><th class="text-muted">Pending Quantity:</th><td class="text-danger fw-bold" id="detail-info-pending-qty">-</td></tr>
+                                        <tr><th class="text-muted">Materials Avail:</th><td id="detail-info-mat-avail">-</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Team & Contributors Section -->
+                            <div class="col-12 mt-3">
+                                <div class="p-3 border rounded bg-white shadow-sm">
+                                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                        <i class="fa-solid fa-users text-primary me-2"></i>Project Team & Contributors (Who Worked On This Project)
+                                    </h6>
+                                    <div id="detail-contributors-container" class="d-flex flex-wrap gap-2 align-items-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Materials -->
+                    <div class="tab-pane fade" id="tab-materials">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">BOM Materials for this Project</h6>
+                            <button class="btn btn-sm btn-outline-primary" id="btn-add-material-for-detail">
+                                <i class="fa-solid fa-plus me-1"></i> Add Material
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover border align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Part Name</th>
+                                        <th>Part Number</th>
+                                        <th>Req Qty</th>
+                                        <th>Avail Qty</th>
+                                        <th>Pending</th>
+                                        <th>Supplier</th>
+                                        <th>Expected Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-materials-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: Timeline & Notes -->
+                    <div class="tab-pane fade" id="tab-timeline">
+                        <div class="row g-3">
+                            <div class="col-md-7 border-end">
+                                <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-timeline text-primary me-2"></i>Activity & Note Logs</h6>
+                                <div class="timeline-feed" id="detail-timeline-container" style="max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="p-3 border rounded bg-light">
+                                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-note-sticky text-warning me-2"></i>Add Project Note</h6>
+                                    <form id="form-detail-add-note">
+                                        <input type="hidden" id="detail-note-proj-id">
+                                        <div class="mb-2">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Author / Technician</label>
+                                            <input type="text" class="form-control form-control-sm" id="detail-note-person" placeholder="e.g. Raja Rajan" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Project Note / Comment</label>
+                                            <textarea class="form-control form-control-sm" id="detail-note-text" rows="3" placeholder="Type your note or milestone comment..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                                            <i class="fa-solid fa-paper-plane me-1"></i> Save Note
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: Blockers & Risks -->
+                    <div class="tab-pane fade" id="tab-blockers">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Active Blockers & Risk Log for this Project</h6>
+                            <button class="btn btn-sm btn-outline-danger" id="btn-add-blocker-for-detail">
+                                <i class="fa-solid fa-plus me-1"></i> Log Blocker
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover border align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title / Issue</th>
+                                        <th>Category</th>
+                                        <th>Severity</th>
+                                        <th>Owner</th>
+                                        <th>Reported Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-blockers-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- TAB 5: Multiple Delivery Batches -->
+                    <div class="tab-pane fade" id="tab-batches">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-success"><i class="fa-solid fa-truck-ramp-box me-1"></i> Delivery Schedule & Partial Shipments</h6>
+                                <div class="small text-muted">Manage 3+ partial delivery dates and batch quantities for this project</div>
+                            </div>
+                            <button class="btn btn-sm btn-success" id="btn-add-batch-for-detail">
+                                <i class="fa-solid fa-plus me-1"></i> Add Delivery Batch
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover border align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Batch #</th>
+                                        <th>Target Delivery Date</th>
+                                        <th class="text-center">Quantity (Units)</th>
+                                        <th>Delivery Status</th>
+                                        <th>DC / Invoice / Notes</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-batches-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-primary" id="btn-detail-edit-proj"><i class="fa-solid fa-pen me-1"></i> Edit Project</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL: ADD / EDIT PROJECT BLOCKER                                           -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="blockerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="blockerModalTitle"><i class="fa-solid fa-triangle-exclamation me-2"></i> Log New Project Blocker</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-blocker">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="blocker-input-id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Select Project <span class="text-danger">*</span></label>
+                            <select class="form-select" id="blocker-input-project-id" required>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Blocker / Issue Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="blocker-input-title" placeholder="e.g. CAN Chipset Supply Delay" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Category</label>
+                            <select class="form-select" id="blocker-input-category">
+                                <option value="Component Shortage">Component Shortage</option>
+                                <option value="Design Clearance">Design Clearance</option>
+                                <option value="Equipment Failure">Equipment Failure</option>
+                                <option value="Vendor Delay">Vendor Delay</option>
+                                <option value="Customer Specs Pending">Customer Specs Pending</option>
+                                <option value="Quality Failure">Quality Failure</option>
+                                <option value="Other">Other Technical Blocker</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Severity Level</label>
+                            <select class="form-select" id="blocker-input-severity">
+                                <option value="Critical">🔥 Critical (Halts Line)</option>
+                                <option value="High">🟠 High (Delays Delivery)</option>
+                                <option value="Medium" selected>🟡 Medium (Minor Bottleneck)</option>
+                                <option value="Low">🔵 Low (Informational Risk)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark">Status</label>
+                            <select class="form-select" id="blocker-input-status">
+                                <option value="Open">🔴 Open</option>
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Resolved">🟢 Resolved</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Assigned Owner / Lead</label>
+                            <input type="text" class="form-control" id="blocker-input-owner" placeholder="e.g. Raja Rajan" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Reported Date</label>
+                            <input type="date" class="form-control" id="blocker-input-date" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">Impact & Action Plan / Notes</label>
+                            <textarea class="form-control" id="blocker-input-notes" rows="3" placeholder="Describe root cause, impact on timeline, and resolution steps..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-semibold">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Blocker Log
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 3: IMPORT EXCEL / CSV WITH COLUMN MAPPING                             -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-import me-2 text-success"></i> Import Projects from Excel/CSV</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4 text-center p-4 border border-dashed rounded bg-light">
+                    <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-2"></i>
+                    <h6 class="fw-bold">Select Excel (.xlsx, .xls) or CSV (.csv) File</h6>
+                    <p class="text-muted small">Upload an existing tracker to automatically map and import columns</p>
+                    <input type="file" id="import-file-input" accept=".xlsx, .xls, .csv" class="form-control form-control-sm w-75 mx-auto">
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-link btn-sm text-decoration-none" id="btn-download-template">
+                            <i class="fa-solid fa-download me-1"></i> Download Sample Excel Template
+                        </button>
+                    </div>
+                </div>
+
+                <div id="import-mapping-section" class="d-none border rounded p-3 bg-white">
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Map Imported File Columns to System Fields</h6>
+                    <div class="row g-2" id="import-mapping-grid">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success fw-semibold" id="btn-execute-import" disabled>
+                    <i class="fa-solid fa-check me-1"></i> Complete Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 4: ADD / EDIT MATERIAL MODAL                                         -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="addMaterialModalTitle"><i class="fa-solid fa-boxes-packing text-primary me-2"></i> Add Material Record</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-add-material">
+                <input type="hidden" id="mat-modal-id">
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Select Project</label>
+                        <select class="form-select form-select-sm" id="mat-modal-proj-id" required></select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Material / Component Name</label>
+                        <input type="text" class="form-control form-control-sm" id="mat-modal-name" placeholder="e.g. CAN Transceiver IC" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Part Number</label>
+                            <input type="text" class="form-control form-control-sm" id="mat-modal-partno" placeholder="e.g. TCAN1042">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Supplier</label>
+                            <input type="text" class="form-control form-control-sm" id="mat-modal-supplier" placeholder="e.g. Texas Instruments">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Required Qty</label>
+                            <input type="number" class="form-control form-control-sm" id="mat-modal-reqqty" min="1" value="100" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Available Qty</label>
+                            <input type="number" class="form-control form-control-sm" id="mat-modal-availqty" min="0" value="100" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Expected Date</label>
+                            <input type="date" class="form-control form-control-sm" id="mat-modal-expdate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select class="form-select form-select-sm" id="mat-modal-status">
+                                <option value="Available">🟢 Available</option>
+                                <option value="Partially Available">🟡 Partially Available</option>
+                                <option value="Pending">🟠 Pending</option>
+                                <option value="Ordered">🔵 Ordered</option>
+                                <option value="Delayed">🔴 Delayed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-semibold"><i class="fa-solid fa-save me-1"></i> Save Material</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 6: ADD / EDIT DELIVERY BATCH MODAL                                   -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="addBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="addBatchModalTitle"><i class="fa-solid fa-truck-ramp-box text-success me-2"></i> Add Delivery Batch</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-add-batch">
+                <input type="hidden" id="batch-modal-proj-id">
+                <input type="hidden" id="batch-modal-id">
+                <div class="modal-body p-3">
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Delivery Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="batch-modal-date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Batch Quantity (Units) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control form-control-sm" id="batch-modal-qty" min="1" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Delivery Status</label>
+                            <select class="form-select form-select-sm" id="batch-modal-status">
+                                <option value="Scheduled">🗓️ Scheduled</option>
+                                <option value="In Transit">🚚 In Transit</option>
+                                <option value="Delivered">🟢 Delivered</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">DC / Invoice / Notes</label>
+                            <input type="text" class="form-control form-control-sm" id="batch-modal-note" placeholder="e.g. Batch 1 - DC# 101">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm fw-semibold"><i class="fa-solid fa-save me-1"></i> Save Delivery Batch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- MODAL 5: ALERTS NOTIFICATION DRAWER                                        -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-bell text-warning me-2"></i> Active System Alerts & Risks</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3" id="notifications-modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- SheetJS for Excel / CSV -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Main Application Script -->
+<script src="script.js"></script>
+
+</body>
+</html>
